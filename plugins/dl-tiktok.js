@@ -1,43 +1,25 @@
-import fetch from 'node-fetch';
+import Scraper from '@SumiFX/Scraper'
 
-const handler = async (m, { conn, args }) => {
-    if (!args[0]) throw `Por favor, ingrese un enlace de TikTok.`;
+let handler = async (m, { conn, args, usedPrefix, command }) => {
+if (!args[0]) return m.reply('🍭 Ingresa un enlace del vídeo de TikTok junto al comando.\n\n`Ejemplo:`\n' + `> *${usedPrefix + command}* https://vm.tiktok.com/ZMMCYHnxf/`)
 
-    try {
-        const apiUrl = `https://api.lolhuman.xyz/api/tiktok?apikey=Gatadios&url=${encodeURIComponent(args[0])}`;
-        const response = await fetch(apiUrl);
-
-        if (response.ok) {
-            m.reply('Descargando el video, por favor espera...');
-
-            const data = await response.json();
-            const videoUrl = data.result.link;
-
-            const fileName = "tiktok.mp4";
-
-            const videoResponse = await fetch(videoUrl);
-            const fileBuffer = await videoResponse.buffer();
-
-            conn.sendFile(m.chat, fileBuffer, fileName, "", m);
-
-            m.reply('Video descargado correctamente.');
-        } else {
-            throw `
-> Sin respuesta
-
-No se pudo obtener el contenido de TikTok.`;
-        }
-    } catch (error) {
-        console.error(error);
-        throw `
-> Sin respuesta
-
-Ocurrió un error al descargar el video de TikTok: ${error.message}`;
-    }
-};
-
-handler.help = ['tiktok'];
-handler.tags = ['dl'];
-handler.command = ['tiktok', 'tt'];
-
-export default handler;
+try {
+let { title, published, quality, likes, commentCount, shareCount, views, dl_url } = await Scraper.tiktokdl(args[0])
+let txt = `╭─⬣「 *TikTok Download* 」⬣\n`
+    txt += `│  ≡◦ *🍭 Titulo ∙* ${title}\n`
+    txt += `│  ≡◦ *📅 Publicado ∙* ${published}\n`
+    txt += `│  ≡◦ *🪴 Calidad ∙* ${quality}\n`
+    txt += `│  ≡◦ *👍 Likes ∙* ${likes}\n`
+    txt += `│  ≡◦ *🗣 Comentarios ∙* ${commentCount}\n`
+    txt += `│  ≡◦ *💫 Share ∙* ${shareCount}\n`
+    txt += `│  ≡◦ *📹 Visitas ∙* ${views}\n`
+    txt += `╰─⬣`
+await conn.sendMessage(m.chat, { video: { url: dl_url }, caption: txt }, { quoted: m})
+} catch {
+}}
+handler.help = ['tiktok <url tt>']
+handler.tags = ['downloader']
+handler.command = ['tiktok', 'ttdl', 'tiktokdl', 'tiktoknowm']
+handler.register = true 
+//handler.limit = 1
+export default handler
