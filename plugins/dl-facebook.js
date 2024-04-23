@@ -1,43 +1,24 @@
-import fetch from 'node-fetch';
+import Scraper from '@SumiFX/Scraper' // Importa el módulo Scraper desde '@SumiFX/Scraper'
 
-const handler = async (m, { conn, args }) => {
-    if (!args[0]) throw `Por favor, ingrese un enlace de Facebook.`;
+// Define un manejador de eventos asincrónico para el comando 'facebook'
+let handler = async (m, { conn, args, usedPrefix, command }) => {
+    // Verifica si se proporcionó un argumento (enlace del vídeo de Facebook)
+    if (!args[0]) return m.reply('🍭 Ingresa el enlace del vídeo de FaceBook junto al comando.\n\n`Ejemplo:`\n' + `> *${usedPrefix + command}* https://www.facebook.com/official.trash.gang/videos/873759786348039/?mibextid=rS40aB7S9Ucbxw6v`)
 
     try {
-        const apiUrl = `https://api.lolhuman.xyz/api/facebook?apikey=Gatadios&url=${encodeURIComponent(args[0])}`;
-        const response = await fetch(apiUrl);
-
-        if (response.ok) {
-            m.reply('Descargando el video, por favor espera...');
-
-            const data = await response.json();
-            const videoUrl = data.result[0];
-
-            const fileName = "fb.mp4";
-
-            const videoResponse = await fetch(videoUrl);
-            const fileBuffer = await videoResponse.buffer();
-
-            conn.sendFile(m.chat, fileBuffer, fileName, "", m);
-
-            m.reply('Video de Facebook descargado correctamente.');
-        } else {
-            throw `
-> Sin respuesta
-
-No se pudo obtener el contenido de Facebook.`;
-        }
-    } catch (error) {
-        console.error(error);
-        throw `
-> Sin respuesta
-
-Ocurrió un error al descargar el video de Facebook: ${error.message}`;
+        // Utiliza el módulo Scraper para obtener el título, la URL en definición estándar (SD) y la URL en alta definición (HD) del vídeo de Facebook
+        let { title, SD, HD } = await Scraper.fbdl(args[0])
+        // Envía el vídeo con la URL en alta definición (HD) o en definición estándar (SD), junto con el título como pie de foto
+        await conn.sendMessage(m.chat, { video: { url: HD || SD }, caption: `*🍭 Titulo ∙* ${title}` }, { quoted: m })
+    } catch {
+        // Captura cualquier error que ocurra durante el proceso
     }
-};
+}
 
-handler.help = ['fb'];
-handler.tags = ['dl'];
-handler.command = ['fb', 'face'];
-
-export default handler;
+handler.help = ['facebook <url fb>'] // Define la ayuda para el comando 'facebook'
+handler.tags = ['downloader'] // Etiqueta el comando como un descargador
+handler.command = ['fb', 'fbdl', 'facebookdl', 'facebook'] // Define los comandos relacionados con 'facebook'
+handler.register = true // Indica que el manejador debe registrarse en el bot
+//handler.limit = 1 // Define un límite para el uso del comando (comentado en este caso, por lo que no se aplica)
+export default handler // Exporta el manejador como predeterminado
+    
